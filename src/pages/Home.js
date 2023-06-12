@@ -1,68 +1,162 @@
-import React,{useState} from 'react'
-import {useDispatch, useSelector} from "react-redux";
-import {Text,Input,Button} from "@chakra-ui/react";
-import styles from "./Home.module.css";
-import Layout from '../components/Layout';
-import { Get_Matrix,Update_Matrix } from '../Redux/action';
-
-const User = () => {
-
- const [no_of_seats,setNumber]=useState(0);
-// Defining the no_of_seats as a state which user going to enter ;
- const {booked}=useSelector(store=>store);
-// Taking booked value from store (redux store);
- const dispatch=useDispatch();
-// To dispatch the action object to reducer to change the global state in store;
-
-// To set the value to no_of_seats entered by user handleChange function is used 
- const handleChange=(e)=>{
-    setNumber(Number(e.target.value))
- }
- // This is to call Update_Matrix and performing patch api call to update in backend and then again calling get request to update the same on the UI,
- const handleSubmit=()=>{
-    dispatch(Update_Matrix({no_of_seats})).then((r)=>{
-        dispatch(Get_Matrix);
-    });
-    
- }
-
+import {
+    Box,
+    Stack,
+    Grid,
+    Heading,
+    Text,
+    Button,
+    VStack,
+    useToast,
+    HStack,
+  } from "@chakra-ui/react";
+  import axios from "axios";
+  import React, { useEffect, useState } from "react";
+  import Seat from "./Seat";
+  import Tickets from "./Ticket";
+  
+  
+  
+  const Homepage = () => {
+    const [allSeats, setAllSeats] = useState([]);
+    const [ticket, setTicket] = useState([]);
+    const [value, setValue] = useState("");
+    const [load, setLoad] = useState(false);
+    const toast = useToast();
+  
+  
+    let getAllSeats = async () => {
+      try {
+        let res = await axios.get(
+          `https://assignmentbackend-2yf5.onrender.com/seats`
+        );
+  
+        setAllSeats(res.data.seats);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+  
+    let handleChange = (e) => {
+      setValue(e.target.value);
+    };
+  
+    let bookSeats = async () => {
+      setLoad(true);
+      try {
+        if (value === "") {
+          toast({
+            position: "top",
+            title: "Aleart",
+            description: "Enter valid Number",
+            status: "error",
+            duration: 2000,
+            isClosable: true,
+          });
+        } else if (+value >= 7) {
+          toast({
+            position: "top",
+            title: "Aleart",
+            description: "You can book only 7 tickets at once",
+            status: "error",
+            duration: 2000,
+            isClosable: true,
+          });
+        } else {
+          let res = await axios.patch(
+            "https://assignmentbackend-2yf5.onrender.com/seats/book",
+            { number: value }
+          );
+          setTicket(res.data.seatNo);
+          getAllSeats();
+          toast({
+            position: "top",
+            title: "Your Tickets Are Booked",
+            description: "Your Tickets Are Booked",
+            status: "success",
+            duration: 2000,
+            isClosable: true,
+            });
+          setLoad(false);
+          setValue("");
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+  
+    useEffect(() => {
+      getAllSeats();
+    }, []);
+  
+    return (
+      <>
+        <Stack
+          w="100vw"
+          h={{ base: "auto", md: "100vh", lg: "100vh" }}
+          bgColor={{ base: "red.50" }}
+        
+          direction={{ base: "column", md: "row", lg: "row" }}
+        >
+          <Box w={{ base: "100%", md: "50%", lg: "50%" }} p="30px">
  
-  return (
-    <div className={styles.parent}>
-        <div>
-            <Text fontSize={"xl"}>User</Text>
-        </div>
-        <div>
-            <Input type="number" onChange={handleChange} placeholder="Enter number of seats to be booked"></Input>
-        </div>
-        <div>
-             <Button _hover={{bg:"blue"}} onClick={handleSubmit}>Submit</Button>
-        </div>
-        <div>
-            <Text fontSize={"2xl"}>Coach Layout</Text>
-        </div>
-        {/* Color Indicators */}
-        <div className={styles.ind}>
-            <ul style={{color:"red"}}>
-               <li><Text>Red Indicates Booked seats</Text></li> 
-            </ul>
-            
-            <ul style={{color:"green"}}>
-                <li><Text>Green Indicates Available seats to Book</Text></li>
-            </ul>
-            <ul style={{color:"blue"}}>
-                <li><Text>Blue Indicates Currently Booked seats</Text></li>
-            </ul>   
-            <ul >
-                <li><Text>No of seats left :- {80-booked}</Text></li>
-            </ul> 
-        </div>
-
-        <div>
-            <Layout/>
-        </div>
-    </div>
-  )
-}
-
-export default User
+            <Heading color={"red"}>BOOK YOUR TICKETS NOW</Heading>
+            <VStack w={{ base: "100%", md: "70%", lg: "70%" }} m="auto" mt="10vh">
+              
+              <input
+                type="number"
+                placeholder="Enter Number"
+                value={value}
+                onChange={handleChange}
+                style={{
+                  width: "40%",
+                  fontSize: "1.2em",
+                  padding: "5px",
+                  textAlign: "center",
+                  color: "red.900",
+                  fontWeight: "bold",
+                }}
+                min="1"
+                max="7"
+              ></input>
+              <Button
+                w="40%"
+                isLoading={load}
+                bgColor={"red.100"}
+                color="red.700"
+                fontWeight={"bold"}
+                onClick={bookSeats}
+              >
+                BOOK
+              </Button>
+            </VStack>
+          </Box>
+          <Box w={{ base: "100%", md: "50%", lg: "50%" }}>
+            <HStack w="50%" m="auto" mt="20px">
+              <Box h="15px" w="15px" bgColor={"red.500"}></Box>{" "}
+              <Text as={"span"}  fontWeight={"bold"}>
+                Booked
+              </Text>
+              <Box h="15px" w="15px" bgColor={"green"}></Box>{" "}
+              <Text as={"span"}  fontWeight={"bold"}>
+                Available
+              </Text>
+            </HStack>
+  
+            <Grid
+              gridTemplateColumns={"repeat(7,1fr)"}
+              gap="10px"
+              w="70%"
+              m="auto"
+              mt="5%"
+            >
+              {allSeats.length > 0 &&
+                allSeats.map((e) => <Seat key={e.seatNumber} {...e} />)}
+            </Grid>
+          </Box>
+        </Stack>
+      </>
+    );
+  };
+  
+  export default Homepage;
+  
