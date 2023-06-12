@@ -27,7 +27,7 @@ import {
     let getAllSeats = async () => {
       try {
         let res = await axios.get(
-          `https://assignmentbackend-2yf5.onrender.com/seats`
+          `https://un-stop-0p2m.onrender.com/seats`
         );
   
         setAllSeats(res.data.seats);
@@ -63,7 +63,7 @@ import {
           });
         } else {
           let res = await axios.patch(
-            "https://assignmentbackend-2yf5.onrender.com/seats/book",
+            "https://un-stop-0p2m.onrender.com/seats/book",
             { number: value }
           );
           setTicket(res.data.seatNo);
