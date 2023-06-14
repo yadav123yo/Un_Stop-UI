@@ -25,6 +25,7 @@ import {
   
   
     let getAllSeats = async () => {
+
       try {
         let res = await axios.get(
           `https://un-stop-0p2m.onrender.com/seats`
@@ -83,6 +84,29 @@ import {
         console.log(error);
       }
     };
+
+    // Reset Function
+
+    let reset = async () => {
+      try {
+         await axios.patch(
+          `https://un-stop-0p2m.onrender.com/seats/reset`
+        );
+   
+        getAllSeats()
+        toast({
+          position: "top",
+          title: "Aleart",
+          description: "All Seats Are Empty Now",
+          status: "error",
+          duration: 2000,
+          isClosable: true,
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    
+    }
   
     useEffect(() => {
       getAllSeats();
@@ -92,15 +116,15 @@ import {
       <>
         <Stack
           w="100vw"
-          h={{ base: "auto", md: "100vh", lg: "100vh" }}
+          h={{ base: "auto", md: "100px", lg: "100px" }}
           bgColor={{ base: "red.50" }}
         
           direction={{ base: "column", md: "row", lg: "row" }}
         >
-          <Box w={{ base: "100%", md: "50%", lg: "50%" }} p="30px">
+          <Box w={{ base: "90%", md: "50%", lg: "50%" }} p="30px">
  
             <Heading color={"red"}>BOOK YOUR TICKETS NOW</Heading>
-            <VStack w={{ base: "100%", md: "70%", lg: "70%" }} m="auto" mt="10vh">
+            <VStack w={{ base: "100%", md: "70%", lg: "70%" }} m="auto" mt="30px">
               
               <input
                 type="number"
@@ -128,6 +152,8 @@ import {
               >
                 BOOK
               </Button>
+
+              <Button m="auto" mt="10vh"   bgColor={"red.100"} fontWeight={"bold"} onClick={reset}>RESET</Button>
             </VStack>
           </Box>
           <Box w={{ base: "100%", md: "50%", lg: "50%" }}>
